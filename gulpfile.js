@@ -70,7 +70,7 @@ gulp.task('js', () => {
 
       // write the JS and sourcemap
       fs.appendFileSync(dist, files.code)
-      fs.writeFileSync('dist/maps/jump.js.map', files.map.toString())
+      // fs.writeFileSync('dist/maps/jump.js.map', files.map.toString())
     })
 })
 
