@@ -10,6 +10,7 @@ const jumper = () => {
   let start           // where scroll starts                    (px)
   let stop            // where scroll stops                     (px)
 
+  let axis            // axis on wich to scroll                 ('y', 'x')
   let offset          // adjustment from the stop position      (px)
   let easing          // easing function                        (function)
   let a11y            // accessibility support flag             (boolean)
@@ -27,26 +28,45 @@ const jumper = () => {
   // scroll position helper
 
   function location() {
-    return container.scrollY || container.pageYOffset || container.scrollTop
+    return (axis === 'y'
+      ? container.scrollY || container.pageYOffset || container.scrollTop
+      : container.scrollX || container.pageXOffset || container.scrollLeft)
   }
 
   // element offset helper
 
-  function top(element) {
-    const elementTop = element.getBoundingClientRect().top
-    const containerTop = container.getBoundingClientRect
-        ? container.getBoundingClientRect().top
-        : 0
+  function elementOffset(element, axis) {
+    let val = 0
 
-    return elementTop - containerTop + start
+    if (axis === 'y') {
+      const elementTop = element.getBoundingClientRect().top
+      const containerTop = container.getBoundingClientRect
+          ? container.getBoundingClientRect().top
+          : 0
+      val = elementTop - containerTop + start
+    } else {
+      const elementLeft = element.getBoundingClientRect().left
+      const containerLeft = container.getBoundingClientRect
+          ? container.getBoundingClientRect().left
+          : 0
+      val = elementLeft - containerLeft + start
+    }
+
+    return val
   }
 
   // scrollTo helper
 
-  function scrollTo(top) {
-    container.scrollTo
-        ? container.scrollTo(0, top) // window
-        : container.scrollTop = top  // custom container
+  function scrollTo(distance) {
+    if (axis === 'y') {
+      container.scrollTo
+          ? container.scrollTo(0, distance) // window
+          : container.scrollTop = distance  // custom container
+    } else {
+      container.scrollTo
+          ? container.scrollTo(distance, 0) // window
+          : container.scrollLeft = distance  // custom container
+    }
   }
 
   // rAF loop helper
@@ -100,6 +120,7 @@ const jumper = () => {
 
   function jump(target, options = {}) {
     // resolve options, or use defaults
+    axis     = options.axis     || 'y'
     duration = options.duration || 1000
     offset   = options.offset   || 0
     callback = options.callback                       // "undefined" is a suitable default, and won't be called
@@ -122,7 +143,7 @@ const jumper = () => {
     }
 
     // cache starting position
-    start = location()
+    start = location(axis)
 
     // resolve target
     switch(typeof target) {
@@ -137,14 +158,14 @@ const jumper = () => {
       // bounding rect is relative to the viewport
       case 'object':
         element = target
-        stop    = top(element)
+        stop    = elementOffset(element, axis)
       break
 
       // scroll to element (selector)
       // bounding rect is relative to the viewport
       case 'string':
         element = document.querySelector(target)
-        stop    = top(element)
+        stop    = elementOffset(element, axis)
       break
     }
 
