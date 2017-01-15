@@ -11,6 +11,7 @@ const jumper = () => {
   let stop            // where scroll stops                     (px)
 
   let axis            // axis on wich to scroll                 ('y', 'x')
+  let exact           // go to exact position                   (boolean)
   let offset          // adjustment from the stop position      (px)
   let easing          // easing function                        (function)
   let a11y            // accessibility support flag             (boolean)
@@ -27,7 +28,7 @@ const jumper = () => {
 
   // scroll position helper
 
-  function location() {
+  function location(axis) {
     return (axis === 'y'
       ? container.scrollY || container.pageYOffset || container.scrollTop
       : container.scrollX || container.pageXOffset || container.scrollLeft)
@@ -126,6 +127,7 @@ const jumper = () => {
     callback = options.callback                       // "undefined" is a suitable default, and won't be called
     easing   = options.easing   || easeInOutQuad
     a11y     = options.a11y     || false
+    exact    = options.exact    || false
 
     // resolve container
     switch(typeof options.container) {
@@ -151,7 +153,7 @@ const jumper = () => {
       case 'number':
         element = undefined           // no element to scroll to
         a11y    = false               // make sure accessibility is off
-        stop    = start + target
+        stop    = exact ? target : start + target
       break
 
       // scroll to element (node)
